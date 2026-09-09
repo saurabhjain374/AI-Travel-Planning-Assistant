@@ -14,7 +14,10 @@ The assistant deliberately splits "decide which tool to call" from
 2. **Final grounding prompt** (`build_final_prompt`) — has **no tools bound**,
    so it cannot start another tool-call loop. It only sees:
    - the retrieved knowledge-base context,
-   - any MCP tool results (weather summary / currency JSON),
+   - any MCP tool results, rendered as plain-text summaries
+     (`build_weather_summary` / `build_currency_summary`) rather than raw
+     JSON, so the model doesn't have to parse structure and can't quote
+     fields that don't exist,
    - a plain-text transcript of prior conversation turns,
    - the current question.
 
@@ -40,10 +43,17 @@ directly as numbered rules:
 - **Weather-aware planning** — combine KB-supported planning advice (start
   early, take breaks, use Cloud Forest/Flower Dome as indoor alternatives,
   etc.) with the live forecast, without inventing new advice.
-- **Facts vs. recommendations** — recommendations must be explicitly labelled
-  ("Recommendation:") and must not introduce a new destination fact.
+- **Facts vs. recommendations vs. live data** — three kinds of statement must
+  stay visibly distinct in the answer: plain sentences for stable
+  knowledge-base facts, a `"Live update:"` prefix for anything drawn from
+  the weather/currency MCP summaries, and a `"Recommendation:"` prefix for
+  suggestions the model itself generates. A recommendation must not
+  introduce a new destination fact.
 - **Insufficient information** — if neither the KB nor MCP data answers the
   question, respond with a fixed fallback sentence instead of guessing.
+- **Forecast-window honesty** — the weather summary explicitly tells the
+  model it only covers today + 3 days, so it doesn't silently overclaim
+  coverage of a further-out "next week" request.
 - **Source priority** — for destination facts, KB > general knowledge; for
   current data, MCP > KB (a static KB sentence is never treated as "current").
 - **Conversation context** — a dedicated "CONVERSATION HISTORY" section
@@ -53,6 +63,19 @@ directly as numbered rules:
   those.
 - **No internal leakage** — the model is told not to mention RAG, MCP,
   embeddings, vector stores, or prompts to the end user.
+
+## Section 5 requirement checklist
+
+| Requirement | How it's satisfied |
+|---|---|
+| Use KB content for destination facts | Rule 1 ("Closed world") + Rule 2 ("Exact-name matching") restrict destination facts to the retrieved context |
+| Use MCP responses for current information | Rule 4/9/10 route weather/currency exclusively through the MCP summaries, never the KB |
+| Avoid presenting unsupported information as fact | Rule 3 ("No invented details") + "Final validation" checklist the model runs before answering |
+| State when information is unavailable | Rule 8 fixed fallback sentence: *"The knowledge base does not provide enough information to confirm this."* |
+| Produce clear, structured recommendations | Rule 6 (day-by-day itinerary structure) + Rule 7A recommendation prefix |
+| Include source references where applicable | Handled outside the free-text prompt: `retrieve_context` returns the KB chunk's `source_title`/`source_url` metadata directly from the retriever (not model-generated), returned by the API and rendered as clickable chips in the UI — this avoids the model hallucinating a citation |
+| Distinguish factual info from AI-generated suggestions | Rule 7A's three-way labelling ("plain sentence" / `"Live update:"` / `"Recommendation:"`) |
+| Preserve relevant user preferences | Rule 9A + the `CONVERSATION HISTORY` transcript passed into every final prompt |
 
 ## Multi-turn context
 
