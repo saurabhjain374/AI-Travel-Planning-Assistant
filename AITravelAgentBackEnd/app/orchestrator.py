@@ -80,6 +80,69 @@ def extract_mcp_result(result):
 # INTENT DETECTION
 # ============================================================
 
+def _levenshtein_distance(a: str, b: str) -> int:
+    """
+    Edit distance between two strings (single-character
+    insert/delete/substitute cost).
+    """
+
+    if a == b:
+        return 0
+
+    previous_row = list(range(len(b) + 1))
+
+    for i, char_a in enumerate(a, start=1):
+
+        current_row = [i]
+
+        for j, char_b in enumerate(b, start=1):
+
+            insert_cost = current_row[j - 1] + 1
+            delete_cost = previous_row[j] + 1
+            substitute_cost = previous_row[j - 1] + (
+                char_a != char_b
+            )
+
+            current_row.append(
+                min(insert_cost, delete_cost, substitute_cost)
+            )
+
+        previous_row = current_row
+
+    return previous_row[-1]
+
+
+def contains_fuzzy_keyword(
+    text: str,
+    keywords: list[str],
+    max_distance: int = 1,
+) -> bool:
+    """
+    Check whether any word in `text` is a near-typo (within
+    `max_distance` edits) of one of `keywords`.
+
+    Used to catch misspellings such as "temprature" without
+    false-positive matching unrelated words such as "temple".
+    """
+
+    words = "".join(
+        char if char.isalnum() else " "
+        for char in text
+    ).split()
+
+    for word in words:
+
+        for keyword in keywords:
+
+            if abs(len(word) - len(keyword)) > max_distance:
+                continue
+
+            if _levenshtein_distance(word, keyword) <= max_distance:
+                return True
+
+    return False
+
+
 def should_use_weather(question: str) -> bool:
     """
     Determine whether live weather information is relevant.
@@ -89,6 +152,7 @@ def should_use_weather(question: str) -> bool:
 
     weather_keywords = [
         "weather",
+        "weath",
         "rain",
         "raining",
         "temperature",
@@ -105,9 +169,17 @@ def should_use_weather(question: str) -> bool:
         "weather-aware",
     ]
 
-    return any(
+    if any(
         keyword in question_lower
         for keyword in weather_keywords
+    ):
+        return True
+
+    # Catch common misspellings (e.g. "temprature") without
+    # false-positive matching unrelated words like "temple".
+    return contains_fuzzy_keyword(
+        question_lower,
+        ["weather", "temperature", "forecast", "humidity", "climate"],
     )
 
 
@@ -136,9 +208,72 @@ def should_use_currency(question: str) -> bool:
         "dollar",
     ]
 
-    return any(
+    if any(
         keyword in question_lower
         for keyword in currency_keywords
+    ):
+        return True
+
+    return contains_fuzzy_keyword(
+        question_lower,
+        ["currency", "exchange", "convert", "budget"],
+    )
+
+
+def mentions_destination_topic(question: str) -> bool:
+    """
+    Determine whether the question is actually asking about
+    destination knowledge (attractions, neighbourhoods, food,
+    transportation, itineraries, activities, etc.).
+
+    Used only to decide whether knowledge-base sources should be
+    shown alongside the answer - a pure "what's the weather" or
+    "convert X to Y" question doesn't need KB sources attached,
+    since the answer wasn't actually grounded in the knowledge base.
+    """
+
+    question_lower = question.lower()
+
+    destination_keywords = [
+        "attraction",
+        "neighbourhood",
+        "neighborhood",
+        "itinerary",
+        "visit",
+        "things to do",
+        "activity",
+        "activities",
+        "food",
+        "restaurant",
+        "hawker",
+        "transport",
+        "mrt",
+        "bus",
+        "taxi",
+        "culture",
+        "cultural",
+        "museum",
+        "temple",
+        "garden",
+        "park",
+        "shopping",
+        "beach",
+        "indoor",
+        "outdoor",
+        "family",
+        "families",
+        "children",
+        "trip",
+        "plan",
+        "sightseeing",
+        "tour",
+        "place",
+        "district",
+    ]
+
+    return any(
+        keyword in question_lower
+        for keyword in destination_keywords
     )
 
 
@@ -418,12 +553,26 @@ def build_final_prompt(
             mcp_results[WEATHER_TOOL]
         )
 
+    weather_data_available = bool(weather_summary)
+
+    if not weather_data_available:
+        weather_summary = (
+            "No live weather data was retrieved for this request."
+        )
+
     currency_result = ""
 
     if CURRENCY_TOOL in mcp_results:
 
         currency_result = build_currency_summary(
             mcp_results[CURRENCY_TOOL]
+        )
+
+    currency_data_available = bool(currency_result)
+
+    if not currency_data_available:
+        currency_result = (
+            "No live currency data was retrieved for this request."
         )
 
     return f"""
@@ -572,6 +721,33 @@ For example, do NOT say:
 "partly cloudy"
 
 just because a weather code exists.
+
+--------------------------------------------------
+RULE 4B - NO LIVE DATA AVAILABLE
+--------------------------------------------------
+
+If the LIVE WEATHER DATA section says "No live weather
+data was retrieved for this request", then:
+
+- You must NOT use the "Live update:" prefix for weather.
+- You must NOT state any temperature, humidity, rain, or
+  forecast figure, even an approximate or typical one.
+- If the user asked about current or forecast weather,
+  say plainly that live weather could not be checked for
+  this request instead of guessing a number.
+
+If the LIVE CURRENCY DATA section says "No live currency
+data was retrieved for this request", then:
+
+- You must NOT use the "Live update:" prefix for currency.
+- You must NOT state any exchange rate or converted amount,
+  even an approximate or typical one.
+- If the user asked about currency conversion, say plainly
+  that a live exchange rate could not be checked for this
+  request instead of guessing a number.
+
+A missing live-data section is never a licence to invent
+a plausible-sounding number from general knowledge.
 
 --------------------------------------------------
 RULE 5 - WEATHER-AWARE PLANNING
@@ -1225,9 +1401,22 @@ Rules:
     # STEP 7 - STRUCTURED RESULT
     # ========================================================
 
+    # Only attach KB sources when the question actually needed
+    # destination knowledge. A pure weather/currency-only question
+    # is answered entirely from MCP, so showing unrelated KB
+    # sources would misleadingly suggest they were used.
+    is_pure_live_data_question = (
+        (weather_required or currency_required)
+        and not mentions_destination_topic(question)
+    )
+
+    visible_sources = (
+        [] if is_pure_live_data_question else sources
+    )
+
     return {
         "answer": answer,
-        "sources": sources,
+        "sources": visible_sources,
         "tools_used": tools_used,
         "mcp_results": mcp_results,
     }
