@@ -2,95 +2,38 @@
 
 ## Two-stage prompting
 
-The assistant deliberately splits "decide which tool to call" from
-"write the final answer" into two separate LLM calls:
+1. **Tool-selection call** — sees only the question and the intent-gated MCP tools. Instructed to call each tool at most once, and only when needed.
+2. **Final grounding call** — **no tools bound**. Receives KB context + MCP results (as plain-text summaries, not raw JSON) + conversation history + question.
 
-1. **Tool-selection prompt** (`run_travel_assistant`, STEP 4 in
-   `app/orchestrator.py`) â€” only sees the question and the subset of MCP
-   tools that intent-detection judged relevant. It is instructed to:
-   - call `get_weather` only for current/forecast weather questions,
-   - call `convert_currency` only for currency/budget questions,
-   - never call a tool that isn't needed, and never call the same tool twice.
-2. **Final grounding prompt** (`build_final_prompt`) â€” has **no tools bound**,
-   so it cannot start another tool-call loop. It only sees:
-   - the retrieved knowledge-base context,
-   - any MCP tool results, rendered as plain-text summaries
-     (`build_weather_summary` / `build_currency_summary`) rather than raw
-     JSON, so the model doesn't have to parse structure and can't quote
-     fields that don't exist,
-   - a plain-text transcript of prior conversation turns,
-   - the current question.
-
-This separation keeps tool selection simple and bounded (`MAX_TOOL_CALLS = 2`)
-while keeping the answer-writing prompt focused purely on grounding
-discipline instead of tool semantics.
+This bounds the tool loop (`MAX_TOOL_CALLS = 2`) and keeps the answer prompt focused purely on grounding.
 
 ## Grounding rules (final prompt)
 
-The final prompt encodes the assignment's prompt-engineering requirements
-directly as numbered rules:
+- **Closed world** — KB = only source of destination facts; MCP = only source of live weather/currency.
+- **Exact-name matching** — attractions/neighbourhoods must appear verbatim in retrieved context.
+- **No invention** — hours, prices, travel times, restaurants, events must come from the context.
+- **Weather honesty** — only report numeric fields present in the payload; forecast covers today + 3 days only.
+- **Three-way labelling** — plain sentences = KB facts; `"Live update:"` = MCP data; `"Recommendation:"` = model suggestion.
+- **Fallback** — if neither KB nor MCP answers the question: *"The knowledge base does not provide enough information to confirm this."*
+- **No leakage** — never mention RAG, MCP, embeddings, or prompts to the user.
 
-- **Closed world** â€” knowledge base = only source of destination facts; MCP
-  data = only source of current weather/currency. No pretrained knowledge.
-- **Exact-name matching** â€” an attraction/neighbourhood/activity may only be
-  mentioned if its exact name appears in the retrieved context.
-- **No invented details** â€” opening hours, prices, travel times, events,
-  restaurants, hotels, etc. must come from the supplied context, never be
-  guessed.
-- **Weather rules** â€” only report the numeric fields actually present in the
-  MCP payload; never translate a weather code into a descriptive condition
-  that wasn't explicitly supplied.
-- **Weather-aware planning** â€” combine KB-supported planning advice (start
-  early, take breaks, use Cloud Forest/Flower Dome as indoor alternatives,
-  etc.) with the live forecast, without inventing new advice.
-- **Facts vs. recommendations vs. live data** â€” three kinds of statement must
-  stay visibly distinct in the answer: plain sentences for stable
-  knowledge-base facts, a `"Live update:"` prefix for anything drawn from
-  the weather/currency MCP summaries, and a `"Recommendation:"` prefix for
-  suggestions the model itself generates. A recommendation must not
-  introduce a new destination fact.
-- **Insufficient information** â€” if neither the KB nor MCP data answers the
-  question, respond with a fixed fallback sentence instead of guessing.
-- **Forecast-window honesty** â€” the weather summary explicitly tells the
-  model it only covers today + 3 days, so it doesn't silently overclaim
-  coverage of a further-out "next week" request.
-- **Source priority** â€” for destination facts, KB > general knowledge; for
-  current data, MCP > KB (a static KB sentence is never treated as "current").
-- **Conversation context** â€” a dedicated "CONVERSATION HISTORY" section
-  preserves user preferences (budget, dates, travel party, interests) stated
-  earlier in the session, but is explicitly *not* treated as a source of
-  destination/weather/currency facts â€” only live MCP/KB data are used for
-  those.
-- **No internal leakage** â€” the model is told not to mention RAG, MCP,
-  embeddings, vector stores, or prompts to the end user.
+## Requirement checklist (assignment §5)
 
-## Section 5 requirement checklist
-
-| Requirement | How it's satisfied |
+| Requirement | Satisfied by |
 |---|---|
-| Use KB content for destination facts | Rule 1 ("Closed world") + Rule 2 ("Exact-name matching") restrict destination facts to the retrieved context |
-| Use MCP responses for current information | Rule 4/9/10 route weather/currency exclusively through the MCP summaries, never the KB |
-| Avoid presenting unsupported information as fact | Rule 3 ("No invented details") + "Final validation" checklist the model runs before answering |
-| State when information is unavailable | Rule 8 fixed fallback sentence: *"The knowledge base does not provide enough information to confirm this."* |
-| Produce clear, structured recommendations | Rule 6 (day-by-day itinerary structure) + Rule 7A recommendation prefix |
-| Include source references where applicable | Handled outside the free-text prompt: `retrieve_context` returns the KB chunk's `source_title`/`source_url` metadata directly from the retriever (not model-generated), returned by the API and rendered as clickable chips in the UI â€” this avoids the model hallucinating a citation |
-| Distinguish factual info from AI-generated suggestions | Rule 7A's three-way labelling ("plain sentence" / `"Live update:"` / `"Recommendation:"`) |
-| Preserve relevant user preferences | Rule 9A + the `CONVERSATION HISTORY` transcript passed into every final prompt |
+| KB for destination facts | Closed-world + exact-name rules |
+| MCP for current information | Weather/currency routed only through MCP summaries |
+| Avoid unsupported claims | No-invention rule + final self-check |
+| State when info unavailable | Fixed fallback sentence |
+| Structured recommendations | Day-by-day itinerary + `Recommendation:` prefix |
+| Source references | `sources` array populated from retriever metadata (not model-generated) |
+| Distinguish fact vs. suggestion | Three-way labelling |
+| Preserve user preferences | `CONVERSATION HISTORY` block in every final prompt |
 
 ## Multi-turn context
 
-`app/main.py` keeps a per-session list of `{role, content}` turns. Each
-request passes the *prior* history into `run_travel_assistant(question,
-history=...)`; after the answer is generated, both the user question and the
-assistant answer are appended so the next turn can reference them. History is
-capped (`MAX_HISTORY_TURNS = 10` exchanges) to bound prompt size.
+Per-session `{role, content}` list in `app/main.py`, capped at 10 turns, passed into every request.
 
 ## Known limitation
 
-`llama3.2:3b` is a small, locally-hosted model. With this length of grounding
-prompt it does not always follow every rule perfectly â€” see
-[sample-questions-and-responses.md](sample-questions-and-responses.md) for
-real (unedited) examples, including cases where it under-uses supplied
-weather data or leaks raw context formatting into the answer. A larger hosted
-model (e.g. GPT-4o-mini, Claude Haiku) would follow the same prompts more
-reliably; the prompts themselves are model-agnostic.
+`llama3.2:3b` is a small local model; with a long rule-dense prompt it occasionally under-uses supplied MCP data or leaks raw context formatting. Prompts are model-agnostic — a larger hosted model (GPT-4o-mini, Claude Haiku) follows them more reliably. See `sample-questions-and-responses.md` for real examples.
