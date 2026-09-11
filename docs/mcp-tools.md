@@ -12,7 +12,7 @@ Both MCP servers and the client are **custom-built** using the `mcp` Python SDK.
 1. Servers use `mcp.server.MCPServer` + `@mcp.tool()`; call external APIs with `httpx`; return a dict or `{"error": ...}`.
 2. Client (`app/mcp/client.py`) spawns a server as a stdio subprocess (`StdioServerParameters` + `stdio_client`) and calls the tool via `ClientSession`.
 3. Tools are wrapped as LangChain `StructuredTool`s (`app/mcp/tool_definitions.py`) and bound via `llm.bind_tools([...])`.
-4. Orchestrator (`app/orchestrator.py`) uses keyword intent gating (`should_use_weather` / `should_use_currency`) to bind only relevant tools. `MAX_TOOL_CALLS = 2` and a duplicate-tool guard prevent loops.
+4. Orchestrator (`app/orchestrator.py`) uses keyword intent gating (`should_use_weather` / `should_use_currency`) to decide which tools are needed. `get_weather` takes no arguments and is called directly (no LLM involved); `convert_currency` still goes through an LLM call bound only to that tool, since its arguments must be parsed from the question.
 
 ## Failure handling
 

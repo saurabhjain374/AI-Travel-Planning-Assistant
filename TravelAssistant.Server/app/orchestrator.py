@@ -619,357 +619,111 @@ GROUNDING RULES
 ==================================================
 
 RULE 1 - CLOSED WORLD
+The knowledge base is the ONLY source for Singapore destination
+information. MCP data is the ONLY source for current weather and
+currency information. Do not use anything not contained in these
+supplied sources.
 
-The knowledge base is the ONLY source for Singapore
-destination information.
-
-The MCP data is the ONLY source for current weather
-and currency information.
-
-Do not use any information that is not contained
-in these supplied sources.
-
---------------------------------------------------
 RULE 2 - EXACT DESTINATION INFORMATION
---------------------------------------------------
+Mention a destination, attraction, activity, neighbourhood, food
+experience, transportation method, or facility ONLY if that exact
+name appears in the knowledge base above (e.g. you may say "Marina
+Bay Sands" or "Singapore Flyer" if present, but must NOT say
+"Buddha Tooth Relic Temple" if it is not). Do not add famous
+Singapore attractions from your own knowledge.
 
-You may use a destination, attraction, activity,
-neighbourhood, food experience, transportation
-method, or facility ONLY when it appears in the
-knowledge base.
-
-The exact name must be supported by the context.
-
-For example:
-
-If the context contains:
-
-"Marina Bay Sands"
-
-then you may mention Marina Bay Sands.
-
-If the context contains:
-
-"Singapore Flyer"
-
-then you may mention Singapore Flyer.
-
-However, if the context does NOT contain:
-
-"Buddha Tooth Relic Temple"
-
-you must NOT mention it.
-
-Do not add famous Singapore attractions from
-your own knowledge.
-
---------------------------------------------------
 RULE 3 - NO INVENTED DETAILS
---------------------------------------------------
+Do NOT invent opening hours, ticket prices, costs, travel times,
+distances, restaurant/hotel names, events, shows, attraction
+facilities, historical/architectural claims, transportation
+prices, exact routes/MRT stations, landmarks, or activities unless
+explicitly present in the knowledge base.
 
-Do NOT invent:
-
-- opening hours
-- ticket prices
-- costs
-- travel times
-- distances
-- restaurant names
-- hotel names
-- events
-- shows
-- light shows
-- attraction facilities
-- historical claims
-- architectural claims
-- transportation prices
-- exact routes
-- exact MRT stations
-- landmarks
-- activities
-
-unless the information is explicitly present
-in the knowledge base.
-
---------------------------------------------------
 RULE 4 - WEATHER
---------------------------------------------------
+Use ONLY the supplied live weather data. You may report numeric
+fields (temperature, apparent temperature, humidity, precipitation,
+rain, wind speed, daily min/max, daily precipitation/rain). Never
+invent a descriptive condition (e.g. "partly cloudy") or translate
+a weather code into words unless the data explicitly gives that
+meaning.
 
-Use ONLY the supplied live weather data.
-
-You may report numeric weather information such as:
-
-- temperature
-- apparent temperature
-- humidity
-- precipitation
-- rain
-- wind speed
-- daily minimum temperature
-- daily maximum temperature
-- daily precipitation
-- daily rain
-
-Do not invent descriptive weather conditions.
-
-Do not convert a weather code into words unless
-the supplied information explicitly provides the
-meaning of that code.
-
-For example, do NOT say:
-
-"partly cloudy"
-
-just because a weather code exists.
-
---------------------------------------------------
 RULE 4B - NO LIVE DATA AVAILABLE
---------------------------------------------------
+If LIVE WEATHER DATA or LIVE CURRENCY DATA says it was not
+retrieved for this request, do NOT use the "Live update:" prefix
+for it and do NOT state any number for it (temperature, humidity,
+rain, forecast, exchange rate, converted amount - even an
+approximate one). Say plainly that it could not be checked. A
+missing live-data section is never a licence to invent a
+plausible-sounding number from general knowledge.
 
-If the LIVE WEATHER DATA section says "No live weather
-data was retrieved for this request", then:
-
-- You must NOT use the "Live update:" prefix for weather.
-- You must NOT state any temperature, humidity, rain, or
-  forecast figure, even an approximate or typical one.
-- If the user asked about current or forecast weather,
-  say plainly that live weather could not be checked for
-  this request instead of guessing a number.
-
-If the LIVE CURRENCY DATA section says "No live currency
-data was retrieved for this request", then:
-
-- You must NOT use the "Live update:" prefix for currency.
-- You must NOT state any exchange rate or converted amount,
-  even an approximate or typical one.
-- If the user asked about currency conversion, say plainly
-  that a live exchange rate could not be checked for this
-  request instead of guessing a number.
-
-A missing live-data section is never a licence to invent
-a plausible-sounding number from general knowledge.
-
---------------------------------------------------
 RULE 5 - WEATHER-AWARE PLANNING
---------------------------------------------------
+When asked for a weather-aware itinerary, choose activities from
+the knowledge base and use the live weather data to adjust them.
+The knowledge base explicitly supports: starting outdoor
+sightseeing earlier, taking breaks, drinking water, using shade,
+combining outdoor and indoor attractions, avoiding overly packed
+schedules, using Cloud Forest and Flower Dome as indoor
+alternatives, and rearranging outdoor activities when rain occurs.
+Use these only when appropriate - do NOT invent additional weather
+advice.
 
-When the user requests a weather-aware itinerary:
-
-Use the knowledge base to identify suitable
-activities.
-
-Use the live weather data to influence the
-recommendation.
-
-The knowledge base explicitly supports:
-
-- starting outdoor sightseeing earlier
-- taking breaks
-- drinking water
-- using shade where available
-- combining outdoor and indoor attractions
-- avoiding overly packed schedules
-- using Cloud Forest and Flower Dome as indoor
-  alternatives
-- rearranging outdoor activities when rain occurs
-
-Use these recommendations only when appropriate.
-
-Do NOT invent additional weather advice.
-
---------------------------------------------------
 RULE 6 - THREE DAY ITINERARY
---------------------------------------------------
+For a 3-day Singapore itinerary, prefer this structure when
+supported by the knowledge base context above:
+- Day 1 (Marina Bay and Gardens): Marina Bay, Gardens by the Bay,
+  Marina Bay Sands, Singapore Flyer, Esplanade area, Singapore
+  River, Cloud Forest, Flower Dome.
+- Day 2 (Heritage and Food): Chinatown, Little India, Kampong
+  Glam, Bugis, food experiences.
+- Day 3 (Nature and Leisure): Sentosa, Singapore Botanic Gardens,
+  Mandai wildlife attractions, East Coast, Southern Ridges.
+Only use an item if the knowledge base context actually supports
+it.
 
-For a 3-day Singapore itinerary, prefer the
-three-day structure from the knowledge base.
-
-DAY 1:
-Marina Bay and Gardens
-
-DAY 2:
-Heritage and Food
-
-DAY 3:
-Nature and Leisure
-
-Supported examples include:
-
-Day 1:
-- Marina Bay
-- Gardens by the Bay
-- Marina Bay Sands
-- Singapore Flyer
-- Esplanade area
-- Singapore River
-- Cloud Forest
-- Flower Dome
-
-Day 2:
-- Chinatown
-- Little India
-- Kampong Glam
-- Bugis
-- food experiences
-
-Day 3:
-- Sentosa
-- Singapore Botanic Gardens
-- Mandai wildlife attractions
-- East Coast
-- Southern Ridges
-
-Only use an item if it is supported by the
-knowledge base context supplied above.
-
---------------------------------------------------
 RULE 7 - FACTS VS RECOMMENDATIONS
---------------------------------------------------
+FACTS are directly supported by the knowledge base or MCP.
+RECOMMENDATIONS are your own suggestions for organizing supported
+activities - prefix these with "Recommendation:" and never
+introduce a new destination fact this way.
 
-Separate facts from recommendations.
-
-FACTS are information directly supported by
-the knowledge base or MCP.
-
-RECOMMENDATIONS are suggestions about how to
-organize supported activities.
-
-Use:
-
-"Recommendation:"
-
-when giving a planning suggestion.
-
-A recommendation must not introduce a new
-destination fact.
-
---------------------------------------------------
 RULE 7A - LABEL EACH TYPE OF INFORMATION
---------------------------------------------------
+Plain sentences (no prefix) = stable destination facts from the
+knowledge base. Every sentence built from LIVE WEATHER DATA or LIVE
+CURRENCY DATA must start with "Live update:" (e.g. "Live update:
+the current temperature is 31°C." / "Live update: 60,000 INR is
+approximately 980 SGD at the current exchange rate."). Your own
+planning suggestions start with "Recommendation:". Never blend a
+live figure into a fact sentence without the "Live update:" prefix,
+and never use that prefix for knowledge-base-only facts.
 
-The user must be able to tell apart three kinds
-of information in your answer:
-
-1. STABLE DESTINATION FACTS (from the knowledge
-   base) - write these as plain factual sentences,
-   with no special prefix.
-
-2. CURRENT / LIVE INFORMATION (from MCP tools,
-   such as weather or currency data) - every
-   sentence built from LIVE WEATHER DATA or LIVE
-   CURRENCY DATA must start with:
-
-   "Live update:"
-
-   For example:
-   "Live update: the current temperature is 31°C."
-   "Live update: 60,000 INR is approximately
-   980 SGD at the current exchange rate."
-
-3. RECOMMENDATIONS (generated by you, the
-   assistant) - prefix these with "Recommendation:"
-   as described above.
-
-Do not blend a live update and a destination fact
-in the same sentence without the "Live update:"
-prefix. Do not use the "Live update:" prefix for
-destination facts that came only from the
-knowledge base.
-
---------------------------------------------------
 RULE 8 - INSUFFICIENT INFORMATION
---------------------------------------------------
+If requested information is not present in the knowledge base or
+MCP data, say: "The knowledge base does not provide enough
+information to confirm this." Do not guess.
 
-If information requested by the user is not
-present in the knowledge base or MCP data, say:
+RULE 9 - CURRENT INFORMATION AND CONVERSATION CONTEXT
+Current weather and exchange rates must come from MCP, never from
+static knowledge - use MCP data whenever supplied, and never say
+weather is unavailable when live weather data was provided. Use
+CONVERSATION HISTORY only to preserve stated user preferences
+(budget, dates, travel party, interests) and stay consistent with
+earlier turns - it is NOT a source of destination, weather, or
+currency facts.
 
-"The knowledge base does not provide enough
-information to confirm this."
-
-Do not guess.
-
---------------------------------------------------
-RULE 9A - CONVERSATION CONTEXT
---------------------------------------------------
-
-Use the CONVERSATION HISTORY only to preserve user
-preferences already stated (such as budget, dates,
-travel party, or interests) and to keep answers
-consistent with earlier turns.
-
-The conversation history is NOT a source of
-destination facts, weather, or currency data.
-
---------------------------------------------------
-RULE 9 - CURRENT INFORMATION
---------------------------------------------------
-
-Current weather must come from MCP.
-
-Current exchange rates must come from MCP.
-
-Never claim a static knowledge-base statement
-is current.
-
-If MCP data is available, use it.
-
-Do NOT say that weather information is unavailable
-when live weather data has been supplied.
-
---------------------------------------------------
 RULE 10 - SOURCE PRIORITY
---------------------------------------------------
+For destination facts: KNOWLEDGE BASE > general knowledge. For
+current weather and currency: MCP > KNOWLEDGE BASE, always. Never
+override live MCP data with static knowledge.
 
-For destination facts:
-
-KNOWLEDGE BASE > GENERAL KNOWLEDGE
-
-For current weather:
-
-MCP > KNOWLEDGE BASE
-
-For current currency:
-
-MCP > KNOWLEDGE BASE
-
-Never override live MCP data with static knowledge.
-
---------------------------------------------------
 FINAL VALIDATION
---------------------------------------------------
-
-Before producing your answer:
-
-1. Check every destination name against the
-   knowledge base.
-
-2. Check every destination fact against the
-   knowledge base.
-
-3. Check every weather number against MCP.
-
-4. Check every currency value against MCP.
-
-5. Remove unsupported claims.
-
-6. Do not add famous attractions just because
-   they are commonly associated with Singapore.
-
-7. Do not invent prices or opening hours.
-
-8. Do not invent events or shows.
-
-9. Do not invent restaurants or hotels.
-
-10. Do not mention information outside the supplied
-    knowledge base and MCP data.
-
-The goal is a grounded answer, not a maximally
-detailed answer.
-
-Do not mention RAG, MCP, embeddings, vector stores,
-LLMs, prompts, or internal implementation details
-to the user.
+Before answering, check every destination name/fact against the
+knowledge base and every weather/currency figure against MCP;
+remove unsupported claims; do not add famous attractions just
+because they're commonly associated with Singapore; do not invent
+prices, hours, events, shows, restaurants, or hotels. The goal is a
+grounded answer, not a maximally detailed one. Never mention RAG,
+MCP, embeddings, vector stores, LLMs, prompts, or other internal
+implementation details to the user.
 """
 
 
@@ -1069,21 +823,85 @@ async def run_travel_assistant(
             CURRENCY_TOOL
         )
 
-    tools = [
-        tool
-        for tool in all_tools
-        if tool.name in allowed_tool_names
-    ]
-
     mcp_results = {}
 
     tools_used = []
 
     # ========================================================
-    # STEP 4 - AI TOOL SELECTION
+    # STEP 4 - WEATHER EXECUTION (NO AI SELECTION NEEDED)
     # ========================================================
 
-    if tools:
+    # get_weather takes no arguments. Once keyword-based intent
+    # detection (should_use_weather) has already decided it's needed,
+    # there is nothing left for an LLM to "select" - calling it
+    # directly skips a full LLM round trip and its CPU cost.
+    if weather_required:
+
+        print(
+            "\n===== MCP TOOL EXECUTION ====="
+        )
+
+        print(
+            "Tool: get_weather (direct call, no AI selection needed)"
+        )
+
+        try:
+
+            mcp_result = await execute_mcp_tool(
+                WEATHER_TOOL,
+                {},
+            )
+
+            mcp_results[WEATHER_TOOL] = extract_mcp_result(
+                mcp_result
+            )
+
+            tools_used.append(WEATHER_TOOL)
+
+            print(
+                "\n===== MCP RESULT ====="
+            )
+
+            print(
+                json.dumps(
+                    mcp_results[WEATHER_TOOL],
+                    indent=2,
+                    default=str,
+                )
+            )
+
+        except Exception as exc:
+
+            print(
+                "\n===== MCP ERROR ====="
+            )
+
+            print(str(exc))
+
+            mcp_results[WEATHER_TOOL] = {
+                "error": (
+                    "The requested live "
+                    "travel service "
+                    "could not be reached."
+                ),
+                "details": str(exc),
+            }
+
+    # ========================================================
+    # STEP 5 - CURRENCY AI ARGUMENT EXTRACTION + EXECUTION
+    # ========================================================
+
+    # convert_currency needs amount/from_currency/to_currency parsed
+    # out of free text, so the LLM is still needed here - but only
+    # bound to this one tool, instead of a generic tool-selection
+    # call that used to run even when only weather was required.
+    if currency_required:
+
+        currency_tool = next(
+            tool
+            for tool in all_tools
+            if tool.name == CURRENCY_TOOL
+        )
 
         print(
             "\n===== AI TOOL SELECTION ====="
@@ -1092,41 +910,21 @@ async def run_travel_assistant(
         llm = get_llm()
 
         tool_enabled_llm = llm.bind_tools(
-            tools
+            [currency_tool]
         )
 
         selection_prompt = f"""
-You are the MCP tool-selection component of a
+You are the currency argument-extraction component of a
 Singapore travel assistant.
 
 User question:
 
 {question}
 
-Available tools:
-
-{", ".join(
-    tool.name
-    for tool in tools
-)}
-
-Rules:
-
-- Use get_weather only when the user needs current
-  or forecast weather information.
-
-- Use convert_currency only when the user asks about
-  currency, exchange rates, money conversion, budget,
-  or currency-related cost information.
-
-- Do not call unnecessary tools.
-
-- Do not call the same tool more than once.
-
-- Do not invent arguments.
-
-- If no live information is required, do not call
-  any tool.
+Call convert_currency with the amount, from_currency, and
+to_currency implied by the question, using ISO currency
+codes (e.g. INR, SGD, USD). Do not invent values that are
+not implied by the question. Call it at most once.
 """
 
         try:
@@ -1180,76 +978,25 @@ Rules:
 
             response = None
 
-        # ====================================================
-        # STEP 5 - CONTROLLED MCP EXECUTION
-        # ====================================================
-
         if response and response.tool_calls:
 
-            executed_tool_names = set()
+            tool_call = response.tool_calls[0]
 
-            for tool_call in response.tool_calls:
+            tool_name = tool_call["name"]
 
-                # --------------------------------------------
-                # Maximum tool protection
-                # --------------------------------------------
+            arguments = tool_call.get(
+                "args",
+                {},
+            )
 
-                if (
-                    len(executed_tool_names)
-                    >= MAX_TOOL_CALLS
-                ):
+            if tool_name != CURRENCY_TOOL:
 
-                    print(
-                        "\nMaximum MCP tool-call "
-                        "limit reached."
-                    )
-
-                    break
-
-                tool_name = tool_call[
-                    "name"
-                ]
-
-                arguments = tool_call.get(
-                    "args",
-                    {},
+                print(
+                    f"\nSkipping unexpected "
+                    f"tool: {tool_name}"
                 )
 
-                # --------------------------------------------
-                # Duplicate protection
-                # --------------------------------------------
-
-                if (
-                    tool_name
-                    in executed_tool_names
-                ):
-
-                    print(
-                        f"\nSkipping duplicate "
-                        f"tool: {tool_name}"
-                    )
-
-                    continue
-
-                # --------------------------------------------
-                # Allowed-tool protection
-                # --------------------------------------------
-
-                if (
-                    tool_name
-                    not in allowed_tool_names
-                ):
-
-                    print(
-                        f"\nSkipping unexpected "
-                        f"tool: {tool_name}"
-                    )
-
-                    continue
-
-                executed_tool_names.add(
-                    tool_name
-                )
+            else:
 
                 print(
                     "\n===== MCP TOOL EXECUTION ====="
@@ -1263,10 +1010,6 @@ Rules:
                     f"Arguments: {arguments}"
                 )
 
-                # --------------------------------------------
-                # Execute MCP
-                # --------------------------------------------
-
                 try:
 
                     mcp_result = (
@@ -1276,24 +1019,15 @@ Rules:
                         )
                     )
 
-                    tool_result = (
+                    mcp_results[tool_name] = (
                         extract_mcp_result(
                             mcp_result
                         )
                     )
 
-                    mcp_results[
+                    tools_used.append(
                         tool_name
-                    ] = tool_result
-
-                    if (
-                        tool_name
-                        not in tools_used
-                    ):
-
-                        tools_used.append(
-                            tool_name
-                        )
+                    )
 
                     print(
                         "\n===== MCP RESULT ====="
@@ -1301,7 +1035,7 @@ Rules:
 
                     print(
                         json.dumps(
-                            tool_result,
+                            mcp_results[tool_name],
                             indent=2,
                             default=str,
                         )
@@ -1315,7 +1049,7 @@ Rules:
 
                     print(str(exc))
 
-                    error_result = {
+                    mcp_results[tool_name] = {
                         "error": (
                             "The requested live "
                             "travel service "
@@ -1324,11 +1058,7 @@ Rules:
                         "details": str(exc),
                     }
 
-                    mcp_results[
-                        tool_name
-                    ] = error_result
-
-    else:
+    if not weather_required and not currency_required:
 
         print(
             "\n===== MCP ====="

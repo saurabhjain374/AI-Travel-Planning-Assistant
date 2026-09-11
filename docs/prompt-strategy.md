@@ -2,22 +2,22 @@
 
 ## Two-stage prompting
 
-1. **Tool-selection call** — sees only the question and the intent-gated MCP tools. Instructed to call each tool at most once, and only when needed.
-2. **Final grounding call** — **no tools bound**. Receives KB context + MCP results (as plain-text summaries, not raw JSON) + conversation history + question.
+1. **Tool-selection call** â€” only used for `convert_currency`, which needs amount/from/to parsed from free text. `get_weather` takes no arguments, so it is called directly once intent detection flags it, skipping this call entirely.
+2. **Final grounding call** â€” **no tools bound**. Receives KB context + MCP results (as plain-text summaries, not raw JSON) + conversation history + question.
 
-This bounds the tool loop (`MAX_TOOL_CALLS = 2`) and keeps the answer prompt focused purely on grounding.
+Skipping the tool-selection call whenever it isn't needed (weather-only questions) roughly halves response time, since local CPU inference is the dominant cost per turn. The final prompt's grounding rules are also kept as concise as possible while preserving every rule, to reduce prefill time on every request.
 
 ## Grounding rules (final prompt)
 
-- **Closed world** — KB = only source of destination facts; MCP = only source of live weather/currency.
-- **Exact-name matching** — attractions/neighbourhoods must appear verbatim in retrieved context.
-- **No invention** — hours, prices, travel times, restaurants, events must come from the context.
-- **Weather honesty** — only report numeric fields present in the payload; forecast covers today + 3 days only.
-- **Three-way labelling** — plain sentences = KB facts; `"Live update:"` = MCP data; `"Recommendation:"` = model suggestion.
-- **Fallback** — if neither KB nor MCP answers the question: *"The knowledge base does not provide enough information to confirm this."*
-- **No leakage** — never mention RAG, MCP, embeddings, or prompts to the user.
+- **Closed world** ï¿½ KB = only source of destination facts; MCP = only source of live weather/currency.
+- **Exact-name matching** ï¿½ attractions/neighbourhoods must appear verbatim in retrieved context.
+- **No invention** ï¿½ hours, prices, travel times, restaurants, events must come from the context.
+- **Weather honesty** ï¿½ only report numeric fields present in the payload; forecast covers today + 3 days only.
+- **Three-way labelling** ï¿½ plain sentences = KB facts; `"Live update:"` = MCP data; `"Recommendation:"` = model suggestion.
+- **Fallback** ï¿½ if neither KB nor MCP answers the question: *"The knowledge base does not provide enough information to confirm this."*
+- **No leakage** ï¿½ never mention RAG, MCP, embeddings, or prompts to the user.
 
-## Requirement checklist (assignment §5)
+## Requirement checklist (assignment ï¿½5)
 
 | Requirement | Satisfied by |
 |---|---|
@@ -36,4 +36,4 @@ Per-session `{role, content}` list in `app/main.py`, capped at 10 turns, passed 
 
 ## Known limitation
 
-`llama3.2:3b` is a small local model; with a long rule-dense prompt it occasionally under-uses supplied MCP data or leaks raw context formatting. Prompts are model-agnostic — a larger hosted model (GPT-4o-mini, Claude Haiku) follows them more reliably. See `sample-questions-and-responses.md` for real examples.
+`llama3.2:3b` is a small local model; with a long rule-dense prompt it occasionally under-uses supplied MCP data or leaks raw context formatting. Prompts are model-agnostic ï¿½ a larger hosted model (GPT-4o-mini, Claude Haiku) follows them more reliably. See `sample-questions-and-responses.md` for real examples.
