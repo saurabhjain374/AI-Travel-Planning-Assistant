@@ -1,5 +1,7 @@
 # MCP Tools
 
+How the assistant reaches out to the real world for live weather and currency data.
+
 Both MCP servers and the client are **custom-built** using the `mcp` Python SDK. No pre-built MCP server packages are used.
 
 | Tool | Server | External API | Purpose |

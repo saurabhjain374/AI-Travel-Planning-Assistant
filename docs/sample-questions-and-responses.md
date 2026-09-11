@@ -1,5 +1,7 @@
 # Sample Questions & Responses
 
+A quick look at what the assistant actually says, in its own words.
+
 Captured verbatim from the running app (`POST /api/chat`, `llama3.2:3b`). Nothing edited.
 
 ---

@@ -1,5 +1,7 @@
 # Architecture
 
+A bird's-eye view of how a chat message turns into a grounded answer.
+
 ```
 React UI (5173) ──► FastAPI /api/chat (8000) ──► Orchestrator
                                                     ├─► RAG: FAISS + HuggingFace embeddings

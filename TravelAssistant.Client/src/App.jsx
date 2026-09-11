@@ -25,6 +25,34 @@ function createSessionId() {
     : `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
+function SendIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z" />
+    </svg>
+  );
+}
+
+function RefreshIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <polyline points="23 4 23 10 17 10" />
+      <polyline points="1 20 1 14 7 14" />
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+    </svg>
+  );
+}
+
 function App() {
   const [sessionId, setSessionId] = useState(
     () => sessionStorage.getItem(SESSION_STORAGE_KEY) || createSessionId()
@@ -115,20 +143,21 @@ function App() {
     <div className="app-shell">
       <header className="app-header">
         <div className="app-header-title">
-          <span className="app-logo">🇸🇬</span>
+          <span className="app-logo">✈️</span>
           <div>
             <h1>AI Travel Planning Assistant</h1>
-            <p>Singapore · Knowledge base + live weather &amp; currency</p>
+            <p>Your friendly guide to Singapore, with live weather &amp; currency updates</p>
           </div>
         </div>
 
         <div className="app-header-actions">
-          <span className={`status-dot ${backendOnline ? "status-online" : "status-offline"}`} />
-          <span className="status-label">
-            {backendOnline === null ? "Checking..." : backendOnline ? "Backend online" : "Backend offline"}
-          </span>
-          <button className="btn-secondary" onClick={handleNewConversation}>
-            New conversation
+          <span
+            className={`status-dot ${backendOnline ? "status-online" : "status-offline"}`}
+            title={backendOnline === null ? "Checking backend..." : backendOnline ? "Backend online" : "Backend offline"}
+          />
+          <button className="btn-secondary" onClick={handleNewConversation} title="Start a new conversation">
+            <RefreshIcon />
+            New chat
           </button>
         </div>
       </header>
@@ -177,8 +206,8 @@ function App() {
             onChange={(event) => setInput(event.target.value)}
             disabled={isLoading}
           />
-          <button type="submit" disabled={isLoading || !input.trim()}>
-            Send
+          <button type="submit" className="send-button" disabled={isLoading || !input.trim()} aria-label="Send message">
+            <SendIcon />
           </button>
         </form>
       </main>

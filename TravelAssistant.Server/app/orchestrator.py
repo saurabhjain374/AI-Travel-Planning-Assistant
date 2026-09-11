@@ -555,6 +555,14 @@ def build_final_prompt(
 
     history_transcript = build_history_transcript(history)
 
+    # Retrieval already filters out chunks that aren't relevant enough
+    # (see MAX_RELEVANT_DISTANCE in rag/service.py), so an empty context
+    # here means nothing relevant was found - make that explicit instead
+    # of showing a blank section, to make RULE 8 trigger reliably.
+    context = context.strip() or (
+        "No relevant knowledge base content was found for this question."
+    )
+
     weather_summary = ""
 
     if WEATHER_TOOL in mcp_results:
@@ -720,8 +728,11 @@ and never use that prefix for knowledge-base-only facts.
 
 RULE 8 - INSUFFICIENT INFORMATION
 If requested information is not present in the knowledge base or
-MCP data, say: "The knowledge base does not provide enough
-information to confirm this." Do not guess.
+MCP data, say so in plain, friendly language a traveller would
+understand, for example: "I don't have information about that for
+Singapore yet, but I'm happy to help with attractions, itineraries,
+weather, or currency." Do not use technical terms like "knowledge
+base" or "MCP" in this message. Do not guess.
 
 RULE 9 - CURRENT INFORMATION AND CONVERSATION CONTEXT
 Current weather and exchange rates must come from MCP, never from

@@ -2,6 +2,13 @@ from app.llm import get_llm
 from app.rag.prompt import build_rag_prompt
 from app.rag.retriever import search_knowledge_base
 
+# FAISS returns L2 distance (lower = more similar) for every query, even
+# when nothing in the knowledge base is actually relevant. Empirically,
+# genuinely on-topic chunks score ~0.5-0.65 while off-topic questions
+# (e.g. "famous sports of Singapore") score ~0.95+, so anything past this
+# cutoff is treated as "not found" rather than shown as a source.
+MAX_RELEVANT_DISTANCE = 0.8
+
 
 def retrieve_context(question: str, k: int = 4):
     """
@@ -18,6 +25,10 @@ def retrieve_context(question: str, k: int = 4):
     sources = []
 
     for document, score in results:
+
+        if score > MAX_RELEVANT_DISTANCE:
+            continue
+
         context_parts.append(document.page_content)
 
         source = {
@@ -41,6 +52,7 @@ def retrieve_context(question: str, k: int = 4):
     context = "\n\n---\n\n".join(context_parts)
 
     return context, sources
+
 
 
 def prepare_rag_prompt(question: str, k: int = 4):
