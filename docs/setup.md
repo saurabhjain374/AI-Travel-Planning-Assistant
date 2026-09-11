@@ -25,7 +25,7 @@ ollama pull llama3.2:3b      # ~2 GB, one-time
 ### B. Backend (port 8000)
 
 ```powershell
-cd AITravelAgentBackEnd
+cd TravelAssistant.Server
 python -m venv .venv
 .venv\Scripts\activate
 pip install --upgrade pip
@@ -39,7 +39,7 @@ Verify: `curl http://localhost:8000/api/health` ? `{"status":"ok"}`
 ### C. Frontend (port 5173)
 
 ```powershell
-cd AITravelAgentUI
+cd TravelAssistant.Client
 npm install
 npm run dev
 ```

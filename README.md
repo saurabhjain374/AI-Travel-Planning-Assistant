@@ -6,7 +6,7 @@ in a FastAPI backend and a React chat UI.
 
 > **Custom-built MCP servers and client.** Both MCP servers
 > (`app/mcp/weather_server.py`, `app/mcp/currency_server.py`) and the MCP client
-> (`app/mcp/client.py`) are implemented from scratch for this assignment using the
+> (`app/mcp/client.py`) are implemented from scratch using the
 > official `mcp` Python SDK. No pre-built / ready-made MCP server packages are consumed.
 > The servers wrap two free public REST APIs (Open-Meteo, open.er-api.com) and are
 > spawned automatically by the client over stdio — no manual server start required.
@@ -14,9 +14,9 @@ in a FastAPI backend and a React chat UI.
 ## Project layout
 
 ```
-AITravelAgentUI/       React (Vite) chat UI
-AITravelAgentBackEnd/  FastAPI backend, RAG pipeline, MCP servers/client, orchestrator, tests
-docs/                  Full project documentation (see below)
+TravelAssistant.Client/  React (Vite) chat UI
+TravelAssistant.Server/  FastAPI backend, RAG pipeline, MCP servers/client, orchestrator, tests
+docs/                    Full project documentation (see below)
 ```
 
 ## Documentation
@@ -48,7 +48,7 @@ ollama pull llama3.2:3b      # ~2 GB, one-time
 ### Terminal B — Backend (FastAPI)
 
 ```powershell
-cd AITravelAgentBackEnd
+cd TravelAssistant.Server
 python -m venv .venv
 .venv\Scripts\activate
 pip install --upgrade pip
@@ -62,7 +62,7 @@ Verify: `curl http://localhost:8000/api/health` → `{"status":"ok"}`.
 ### Terminal C — Frontend (React + Vite)
 
 ```powershell
-cd AITravelAgentUI
+cd TravelAssistant.Client
 npm install
 npm run dev
 ```
