@@ -21,4 +21,4 @@ Two separate LLM calls keep the tool loop bounded and the answer prompt focused 
 
 ## Sessions
 
-`app/main.py` holds `SESSIONS: dict[session_id, history]` in memory. UI generates a UUID (persisted in `sessionStorage`) and sends it every turn. History is capped at 10 turns; lost on restart.
+`app/main.py` holds `SESSIONS: dict[session_id, history]` in memory. The client generates a UUID (persisted in `sessionStorage`) and sends it every turn. History is capped at 10 turns; lost on restart.
