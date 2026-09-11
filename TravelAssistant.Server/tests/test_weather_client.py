@@ -1,13 +1,19 @@
 import asyncio
+import sys
+from pathlib import Path
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
+WEATHER_SERVER = (
+    Path(__file__).resolve().parents[1] / "app" / "mcp" / "weather_server.py"
+)
+
 
 async def main():
     server_params = StdioServerParameters(
-        command="python",
-        args=["app/mcp/weather_server.py"],
+        command=sys.executable,
+        args=[str(WEATHER_SERVER)],
     )
 
     async with stdio_client(server_params) as (read, write):

@@ -21,4 +21,4 @@ Any exception is caught and passed to the final prompt as `{"error": ...}`. The 
 ## Tests
 
 - `tests/test_tool_calling.py` — verifies correct tool selection.
-- `app/mcp/test_weather_client.py`, `test_currency_client.py` — exercise servers via the stdio client.
+- `tests/test_weather_client.py`, `tests/test_currency_client.py` — exercise servers via the stdio client.

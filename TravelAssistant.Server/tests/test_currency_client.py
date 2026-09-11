@@ -1,13 +1,19 @@
 import asyncio
+import sys
+from pathlib import Path
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
+CURRENCY_SERVER = (
+    Path(__file__).resolve().parents[1] / "app" / "mcp" / "currency_server.py"
+)
+
 
 async def main():
     server_params = StdioServerParameters(
-        command="python",
-        args=["app/mcp/currency_server.py"],
+        command=sys.executable,
+        args=[str(CURRENCY_SERVER)],
     )
 
     async with stdio_client(server_params) as (read, write):
