@@ -1,4 +1,4 @@
-# 🇸🇬 AI Travel Planning Assistant
+# AI Travel Planning Assistant - Singapore
 
 **Your friendly AI travel buddy for Singapore** — ask about attractions, itineraries, live weather,
 or currency conversion, and get a grounded, easy-to-read answer in a chat UI.
