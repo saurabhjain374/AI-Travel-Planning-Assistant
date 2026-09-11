@@ -59,22 +59,40 @@ function App() {
     setMessages((previous) => [...previous, { role: "user", content: question }]);
     setIsLoading(true);
 
-    try {
-      const result = await sendChatMessage(question, sessionId);
+    let assistantMessageAdded = false;
 
-      setSessionId(result.session_id);
-      setMessages((previous) => [
-        ...previous,
-        {
-          role: "assistant",
-          content: result.answer,
-          sources: result.sources,
-          toolsUsed: result.tools_used,
+    function appendToAssistantMessage(updater) {
+      setMessages((previous) => {
+        const next = [...previous];
+        next[next.length - 1] = updater(next[next.length - 1]);
+        return next;
+      });
+    }
+
+    try {
+      await sendChatMessage(question, sessionId, {
+        onMeta: ({ session_id, sources, tools_used }) => {
+          setSessionId(session_id);
+          assistantMessageAdded = true;
+          setMessages((previous) => [
+            ...previous,
+            { role: "assistant", content: "", sources, toolsUsed: tools_used, streaming: true },
+          ]);
         },
-      ]);
+        onChunk: (text) => {
+          if (!assistantMessageAdded) return;
+          appendToAssistantMessage((message) => ({
+            ...message,
+            content: message.content + text,
+          }));
+        },
+      });
     } catch (err) {
       setError(err.message || "Something went wrong while contacting the assistant.");
     } finally {
+      if (assistantMessageAdded) {
+        appendToAssistantMessage((message) => ({ ...message, streaming: false }));
+      }
       setIsLoading(false);
     }
   }
@@ -121,7 +139,7 @@ function App() {
             <MessageBubble key={index} message={message} />
           ))}
 
-          {isLoading && (
+          {isLoading && messages[messages.length - 1]?.role === "user" && (
             <div className="message-row">
               <div className="avatar avatar-assistant">🌴</div>
               <div className="bubble bubble-assistant typing-indicator">

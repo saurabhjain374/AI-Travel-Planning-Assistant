@@ -511,10 +511,17 @@ def build_history_transcript(
 ) -> str:
     """
     Render prior conversation turns as a plain transcript.
+
+    Each turn is capped in length - full itinerary-length answers
+    stored across several turns would otherwise bloat the prompt past
+    the model's context window, which was silently truncating answers
+    and causing the model to lose track of the current question.
     """
 
     if not history:
         return "(no prior conversation)"
+
+    max_chars_per_turn = 500
 
     lines = []
 
@@ -522,6 +529,9 @@ def build_history_transcript(
 
         role = turn.get("role", "user")
         content = turn.get("content", "")
+
+        if len(content) > max_chars_per_turn:
+            content = content[:max_chars_per_turn].rstrip() + " [...]"
 
         speaker = "User" if role == "user" else "Assistant"
 
@@ -667,7 +677,7 @@ alternatives, and rearranging outdoor activities when rain occurs.
 Use these only when appropriate - do NOT invent additional weather
 advice.
 
-RULE 6 - THREE DAY ITINERARY
+RULE 6 - ITINERARY LENGTH AND STRUCTURE
 For a 3-day Singapore itinerary, prefer this structure when
 supported by the knowledge base context above:
 - Day 1 (Marina Bay and Gardens): Marina Bay, Gardens by the Bay,
@@ -677,8 +687,20 @@ supported by the knowledge base context above:
   Glam, Bugis, food experiences.
 - Day 3 (Nature and Leisure): Sentosa, Singapore Botanic Gardens,
   Mandai wildlife attractions, East Coast, Southern Ridges.
-Only use an item if the knowledge base context actually supports
-it.
+If the user asks for a different number of days, produce exactly
+that many days - cycle through these same three themes (repeating
+or combining supported items across the extra days) rather than
+inventing new attractions. Keep each day's entry brief (a short
+list of items, not long paragraphs) so a longer itinerary still
+fits comfortably in the answer. Only use an item if the knowledge
+base context actually supports it.
+
+RULE 6B - STAY ON THE CURRENT QUESTION
+Answer only the USER QUESTION (current turn) shown above. The
+CONVERSATION HISTORY is background for preferences only - never
+copy, continue, or restart a previous assistant answer from it,
+and never let an earlier turn's topic (e.g. a currency conversion)
+leak into an unrelated new answer (e.g. an itinerary).
 
 RULE 7 - FACTS VS RECOMMENDATIONS
 FACTS are directly supported by the knowledge base or MCP.
@@ -731,10 +753,14 @@ implementation details to the user.
 # MAIN ORCHESTRATOR
 # ============================================================
 
-async def run_travel_assistant(
+async def _prepare_answer_context(
     question: str,
     history: list[dict[str, str]] | None = None,
 ):
+    """
+    Run RAG retrieval and MCP tool execution - the steps shared by
+    both the blocking and streaming final-answer paths.
+    """
 
     print(
         "\n=================================================="
@@ -1068,6 +1094,38 @@ not implied by the question. Call it at most once.
             "No live MCP tool required."
         )
 
+    # Only attach KB sources when the question actually needed
+    # destination knowledge. A pure weather/currency-only question
+    # is answered entirely from MCP, so showing unrelated KB
+    # sources would misleadingly suggest they were used.
+    is_pure_live_data_question = (
+        (weather_required or currency_required)
+        and not mentions_destination_topic(question)
+    )
+
+    visible_sources = (
+        [] if is_pure_live_data_question else sources
+    )
+
+    return {
+        "context": context,
+        "sources": visible_sources,
+        "mcp_results": mcp_results,
+        "tools_used": tools_used,
+    }
+
+
+# ============================================================
+# BLOCKING (NON-STREAMING) ANSWER
+# ============================================================
+
+async def run_travel_assistant(
+    question: str,
+    history: list[dict[str, str]] | None = None,
+):
+
+    prepared = await _prepare_answer_context(question, history)
+
     # ========================================================
     # STEP 6 - FINAL GROUNDED LLM
     # ========================================================
@@ -1078,8 +1136,8 @@ not implied by the question. Call it at most once.
 
     final_prompt = build_final_prompt(
         question=question,
-        context=context,
-        mcp_results=mcp_results,
+        context=prepared["context"],
+        mcp_results=prepared["mcp_results"],
         history=history,
     )
 
@@ -1127,29 +1185,87 @@ not implied by the question. Call it at most once.
 
     print(answer)
 
-    # ========================================================
-    # STEP 7 - STRUCTURED RESULT
-    # ========================================================
-
-    # Only attach KB sources when the question actually needed
-    # destination knowledge. A pure weather/currency-only question
-    # is answered entirely from MCP, so showing unrelated KB
-    # sources would misleadingly suggest they were used.
-    is_pure_live_data_question = (
-        (weather_required or currency_required)
-        and not mentions_destination_topic(question)
-    )
-
-    visible_sources = (
-        [] if is_pure_live_data_question else sources
-    )
-
     return {
         "answer": answer,
-        "sources": visible_sources,
-        "tools_used": tools_used,
-        "mcp_results": mcp_results,
+        "sources": prepared["sources"],
+        "tools_used": prepared["tools_used"],
+        "mcp_results": prepared["mcp_results"],
     }
+
+
+# ============================================================
+# STREAMING ANSWER
+# ============================================================
+
+async def run_travel_assistant_stream(
+    question: str,
+    history: list[dict[str, str]] | None = None,
+):
+    """
+    Same pipeline as `run_travel_assistant`, but yields the final
+    answer token-by-token so the UI can render it as it is
+    generated instead of waiting for the whole response.
+
+    Yields dicts:
+      {"type": "meta", "sources": [...], "tools_used": [...]}
+      {"type": "chunk", "text": "..."}
+    """
+
+    prepared = await _prepare_answer_context(question, history)
+
+    yield {
+        "type": "meta",
+        "sources": prepared["sources"],
+        "tools_used": prepared["tools_used"],
+    }
+
+    print(
+        "\n===== FINAL GROUNDED RESPONSE (STREAMING) ====="
+    )
+
+    final_prompt = build_final_prompt(
+        question=question,
+        context=prepared["context"],
+        mcp_results=prepared["mcp_results"],
+        history=history,
+    )
+
+    final_llm = get_llm()
+
+    try:
+
+        async for token in final_llm.astream(
+            [
+                (
+                    "system",
+                    final_prompt,
+                ),
+                (
+                    "human",
+                    question,
+                ),
+            ]
+        ):
+
+            if token.content:
+                yield {"type": "chunk", "text": token.content}
+
+    except Exception as exc:
+
+        print(
+            "\n===== FINAL LLM ERROR ====="
+        )
+
+        print(str(exc))
+
+        yield {
+            "type": "chunk",
+            "text": (
+                "I’m sorry, but I was unable to "
+                "generate the travel recommendation "
+                "at this time."
+            ),
+        }
 
 
 # ============================================================

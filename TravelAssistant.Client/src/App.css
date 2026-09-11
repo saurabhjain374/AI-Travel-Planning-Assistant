@@ -147,6 +147,120 @@
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
 }
 
+.bubble-assistant .bubble-text {
+  /* Markdown is already broken into proper block elements (p, li, h3...);
+     keeping pre-wrap here would also render the raw blank-line/newline
+     characters from the source text, doubling up on top of CSS margins. */
+  white-space: normal;
+}
+
+.streaming-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 1em;
+  margin-left: 2px;
+  background: #1a936f;
+  vertical-align: text-bottom;
+  animation: blink 0.9s steps(1) infinite;
+}
+
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.bubble-text p {
+  margin: 0 0 6px;
+}
+
+.bubble-text p:last-child {
+  margin-bottom: 0;
+}
+
+.bubble-text h1,
+.bubble-text h2,
+.bubble-text h3 {
+  margin: 10px 0 4px;
+  line-height: 1.25;
+  color: #0f2a3f;
+}
+
+.bubble-text h1:first-child,
+.bubble-text h2:first-child,
+.bubble-text h3:first-child {
+  margin-top: 0;
+}
+
+.bubble-text h1 {
+  font-size: 17px;
+}
+
+.bubble-text h2 {
+  font-size: 16px;
+}
+
+.bubble-text h3 {
+  font-size: 15.5px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.bubble-text strong {
+  color: #114b5f;
+}
+
+.bubble-text ul,
+.bubble-text ol {
+  margin: 2px 0 6px;
+  padding-left: 20px;
+}
+
+.bubble-text li {
+  margin-bottom: 2px;
+}
+
+.bubble-text li:last-child {
+  margin-bottom: 0;
+}
+
+.bubble-text li p {
+  margin: 0;
+}
+
+.bubble-text ul:last-child,
+.bubble-text ol:last-child {
+  margin-bottom: 0;
+}
+
+.bubble-text li::marker {
+  color: #1a936f;
+}
+
+.bubble-text hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 12px 0;
+}
+
+.bubble-text code {
+  background: #f1f5f9;
+  color: #0f2a3f;
+  padding: 1px 5px;
+  border-radius: 5px;
+  font-size: 13px;
+}
+
+.bubble-text a {
+  color: #1a936f;
+  font-weight: 600;
+}
+
 .badge-row {
   display: flex;
   flex-wrap: wrap;

@@ -9,7 +9,9 @@ async function parseErrorMessage(response) {
   }
 }
 
-export async function sendChatMessage(message, sessionId) {
+// Streams the chat answer as Server-Sent Events so the UI can render
+// tokens as they're generated instead of waiting for the full answer.
+export async function sendChatMessage(message, sessionId, { onMeta, onChunk } = {}) {
   const response = await fetch(`${API_BASE_URL}/api/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -20,7 +22,32 @@ export async function sendChatMessage(message, sessionId) {
     throw new Error(await parseErrorMessage(response));
   }
 
-  return response.json();
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+
+    const events = buffer.split("\n\n");
+    buffer = events.pop() ?? "";
+
+    for (const rawEvent of events) {
+      const line = rawEvent.trim();
+      if (!line.startsWith("data:")) continue;
+
+      const payload = JSON.parse(line.slice("data:".length).trim());
+
+      if (payload.type === "meta") {
+        onMeta?.(payload);
+      } else if (payload.type === "chunk") {
+        onChunk?.(payload.text);
+      }
+    }
+  }
 }
 
 export async function clearSession(sessionId) {
@@ -39,3 +66,4 @@ export async function checkHealth() {
     return false;
   }
 }
+

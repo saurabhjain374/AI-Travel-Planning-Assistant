@@ -1,7 +1,19 @@
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
 const TOOL_LABELS = {
   get_weather: { icon: "⛅", label: "Live Weather" },
   convert_currency: { icon: "💱", label: "Live Currency" },
 };
+
+// Give the model's "Live update:" / "Recommendation:" prefixes (see the
+// grounding rules in orchestrator.py) a small icon so they stand out
+// visually from plain knowledge-base facts.
+function decorateAnswer(content) {
+  return content
+    .replace(/Live update:/g, "🔴 **Live update:**")
+    .replace(/Recommendation:/g, "💡 **Recommendation:**");
+}
 
 function ToolBadge({ toolName }) {
   const meta = TOOL_LABELS[toolName] || { icon: "🔧", label: toolName };
@@ -46,7 +58,16 @@ export default function MessageBubble({ message }) {
       </div>
 
       <div className={`bubble ${isUser ? "bubble-user" : "bubble-assistant"}`}>
-        <div className="bubble-text">{message.content}</div>
+        <div className="bubble-text">
+          {isUser ? (
+            message.content
+          ) : (
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {decorateAnswer(message.content)}
+            </ReactMarkdown>
+          )}
+          {!isUser && message.streaming && <span className="streaming-cursor" aria-label="Generating response" />}
+        </div>
 
         {!isUser && message.toolsUsed && message.toolsUsed.length > 0 && (
           <div className="badge-row">
