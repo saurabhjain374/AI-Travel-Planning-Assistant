@@ -54,6 +54,11 @@ Demonstrates: attractions from KB, rain caveat from MCP, both cited/labelled.
 
 The tool *did* return data; the small local model occasionally under-uses it. Called out per assignment requirement to handle failures honestly. See `prompt-strategy.md § Known limitation`.
 
+> **Note:** this transcript predates the human-friendly fallback wording (RULE 8) — today the
+> assistant would say something like *"I don't have information about that for Singapore yet,
+> but I'm happy to help with attractions, itineraries, weather, or currency"* instead of naming
+> "the knowledge base". The underlying issue (under-using returned tool data) is unchanged.
+
 ---
 
 | # | Scenario | Requirement |

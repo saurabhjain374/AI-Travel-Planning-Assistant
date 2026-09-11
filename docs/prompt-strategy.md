@@ -24,7 +24,7 @@ prefill time on every request.
 | 🚫 No invention | Hours, prices, travel times, restaurants, events must come from the context |
 | 🌦️ Weather honesty | Only numeric fields present in the payload are reported; forecast covers today + 3 days |
 | 🏷️ Three-way labelling | Plain sentences = KB facts · `Live update:` = live data · `Recommendation:` = model suggestion |
-| 🤷 Honest fallback | If neither source answers the question, it says so in plain language — never a technical excuse |
+| 🤷 Honest fallback | If neither source answers the question, it says so in plain language — never a technical excuse — e.g. *"I don't have information about that for Singapore yet, but I'm happy to help with attractions, itineraries, weather, or currency."* |
 | 🤐 No leakage | Never mentions "RAG", "MCP", "knowledge base", "embeddings", or prompts to the user |
 
 ## Requirement checklist (assignment §5)
@@ -34,7 +34,7 @@ prefill time on every request.
 | KB for destination facts | Closed-world + exact-name rules |
 | Live data for current information | Weather/currency routed only through MCP summaries |
 | Avoid unsupported claims | No-invention rule + final self-check |
-| State when info unavailable | Fixed, human-friendly fallback message |
+| State when info unavailable | Human-friendly fallback message, e.g. *"I don't have information about that for Singapore yet..."* (RULE 8) |
 | Structured recommendations | Day-by-day itinerary + `Recommendation:` prefix |
 | Source references | `sources` array populated from retriever metadata (not model-generated) |
 | Distinguish fact vs. suggestion | Three-way labelling |

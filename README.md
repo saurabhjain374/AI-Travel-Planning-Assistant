@@ -17,7 +17,7 @@ or currency conversion, and get a grounded, easy-to-read answer in a chat UI.
 | 💱 Currency conversion (e.g. INR → SGD) | **Live rates** from open.er-api.com |
 | 🗺️ A weather-aware multi-day plan | Both, combined into one grounded answer |
 
-If the answer isn't in the knowledge base or live data, the assistant says so plainly instead of guessing.
+If the answer isn't in the knowledge base or live data, the assistant says so plainly instead of guessing, for example: *"I don't have information about that for Singapore yet, but I'm happy to help with attractions, itineraries, weather, or currency."*
 
 ## 🧩 How it's built
 
