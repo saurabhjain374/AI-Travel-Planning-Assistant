@@ -10,6 +10,7 @@ How the assistant turns a folder of Markdown files into grounded, cited answers.
 | `02_visit_singapore_essentials.md` | Visit Singapore — Essential Travel Information |
 | `03_visit_singapore_itineraries.md` | Visit Singapore — Sample Itineraries |
 | `04_visit_singapore_things_to_do.md` | Visit Singapore — Things to Do |
+| `05_nparks_singapore_nature.md` | NParks — Parks, Nature Reserves and Park Connectors |
 
 Each file has front-matter (`source_title`, `source_url`) attached as document metadata before chunking, so every chunk carries its citation.
 

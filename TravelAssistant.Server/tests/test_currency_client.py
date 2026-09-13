@@ -4,6 +4,7 @@ from pathlib import Path
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
+from mcp.types import TextContent
 
 CURRENCY_SERVER = (
     Path(__file__).resolve().parents[1] / "app" / "mcp" / "currency_server.py"
@@ -45,7 +46,7 @@ async def main():
             print("\n===== CURRENCY RESULT =====")
 
             for content in result.content:
-                if hasattr(content, "text"):
+                if isinstance(content, TextContent):
                     print(content.text)
 
 

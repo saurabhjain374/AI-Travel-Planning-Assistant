@@ -4,6 +4,7 @@ from pathlib import Path
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
+from mcp.types import TextContent
 
 WEATHER_SERVER = (
     Path(__file__).resolve().parents[1] / "app" / "mcp" / "weather_server.py"
@@ -44,7 +45,7 @@ async def main():
             print("\n===== WEATHER RESULT =====")
 
             for content in result.content:
-                if hasattr(content, "text"):
+                if isinstance(content, TextContent):
                     print(content.text)
 
 

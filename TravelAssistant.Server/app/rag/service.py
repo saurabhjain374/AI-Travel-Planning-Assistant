@@ -3,11 +3,16 @@ from app.rag.prompt import build_rag_prompt
 from app.rag.retriever import search_knowledge_base
 
 # FAISS returns L2 distance (lower = more similar) for every query, even
-# when nothing in the knowledge base is actually relevant. Empirically,
-# genuinely on-topic chunks score ~0.5-0.65 while off-topic questions
-# (e.g. "famous sports of Singapore") score ~0.95+, so anything past this
-# cutoff is treated as "not found" rather than shown as a source.
-MAX_RELEVANT_DISTANCE = 0.8
+# when nothing in the knowledge base is actually relevant. Empirically
+# (all-MiniLM-L6-v2 on this KB):
+#   - Well-formed on-topic queries top-1 ~0.5-0.7
+#   - On-topic queries with typos / country-name misspellings ~1.0-1.3
+#     (e.g. "Singapour natural park list" -> ~1.03 for the NParks chunk)
+#   - Off-topic queries (python code, cricket, chocolate cake) ~1.45+
+# Cutoff sits above the typo band but well below the off-topic band so
+# real matches survive minor spelling errors without polluting answers
+# for genuinely unrelated questions.
+MAX_RELEVANT_DISTANCE = 1.25
 
 
 def retrieve_context(question: str, k: int = 4):
