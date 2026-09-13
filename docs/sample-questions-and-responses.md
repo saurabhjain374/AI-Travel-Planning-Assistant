@@ -61,9 +61,81 @@ The tool *did* return data; the small local model occasionally under-uses it. Ca
 
 ---
 
+### 5. RAG only — nature reserves (newly added NParks KB)
+
+**Q:** *What are Singapore's nature reserves and what can I do there?*
+**Tools:** none · **Sources:** NParks — Parks, Nature Reserves and Park Connectors; Visit Singapore — Things to Do
+
+> Singapore has four nature reserves:
+>
+> 1. Central Catchment Nature Reserve
+> 2. Bukit Timah Nature Reserve
+> 3. Sungei Buloh Wetland Reserve
+> 4. Labrador Nature Reserve
+>
+> These nature reserves protect ecosystems and native flora and fauna. Visitors should follow posted rules and stay on designated trails.
+>
+> Some activities you can do at these nature reserves include:
+>
+> * Hiking
+> * Nature walks
+> * Birdwatching
+> * Exploring forest trails
+> * TreeTop Walk (at Central Catchment Nature Reserve)
+>
+> Please note that the park hours and activities may vary, so it's best to check the official website or contact the park directly for more information.
+
+---
+
+### 6. RAG only — public transport (newly added LTA KB)
+
+**Q:** *How do I get around Singapore using public transport?*
+**Tools:** none · **Sources:** Land Transport Authority — Getting Around Singapore; Visit Singapore — Traveller Essentials
+
+> The MRT is one of the most convenient ways for visitors to travel around Singapore. It connects many major tourist areas and residential districts.
+>
+> Visitors can use MRT stations to reach areas such as Marina Bay, Chinatown, Little India, Bugis, Orchard, and other major destinations.
+>
+> Public buses provide extensive coverage and can complement the MRT.
+>
+> Buses are useful when an attraction or hotel is not located directly next to an MRT station.
+>
+> Taxis and ride-hailing services provide convenient alternatives when travelling with luggage, during late hours, or when a destination is less convenient to reach by public transport.
+>
+> Walking can be a good way to explore compact cultural districts such as Chinatown, Little India, and Kampong Glam.
+>
+> However, visitors should consider Singapore's heat and humidity when planning long walking routes.
+
+---
+
+### 7. RAG only — heritage & museums (newly added NHB KB)
+
+**Q:** *Tell me about heritage attractions and museums in Singapore.*
+**Tools:** none · **Sources:** National Heritage Board — Singapore Heritage and Museums; Visit Singapore — Traveller Essentials
+
+> Heritage attractions and museums in Singapore are numerous and diverse, showcasing the country's rich history and cultural heritage. Here are some notable ones:
+>
+> 1. **National Museum of Singapore**: A premier museum that tells the story of Singapore's history and culture, from its ancient roots to the present day.
+> 2. **Indian Heritage Centre**: A museum that showcases the history and culture of the Indian community in Singapore, with a focus on the Indian independence movement.
+> 3. **Malay Heritage Centre**: A museum that explores the history and culture of the Malay community in Singapore, with a focus on the Malay Sultanate and the country's Islamic heritage.
+> 4. **Chinatown Heritage Centre**: A museum that tells the story of the Chinese community in Singapore, from the 19th century to the present day.
+> 5. **National Monuments**: Several national monuments throughout Singapore, such as the Buddha Tooth Relic Temple and the Sultan Mosque, which showcase the country's rich cultural heritage.
+> 6. **Gardens by the Bay**: While not strictly a museum, Gardens by the Bay features several heritage-inspired attractions, such as the Cloud Forest and Flower Dome cooled conservatories.
+> 7. **Little India Arcade**: A historic shopping arcade that showcases the vibrant culture and heritage of Little India.
+> 8. **Kampong Glam**: A historic Malay village that has been preserved to showcase the country's Islamic heritage and cultural traditions.
+> 9. **Singapore River**: A scenic river that has played a significant role in Singapore's history and development, with several heritage-inspired attractions and walking trails along its banks.
+> 10. **Heritage Trails**: Several heritage trails throughout Singapore, such as the Singapore Heritage Trail and the Kampong Glam Heritage Trail, which take visitors on a journey through the country's rich cultural heritage.
+
+Demonstrates: expanded KB (NHB) now returns richer, multi-source heritage answers grounded in cited files.
+
+---
+
 | # | Scenario | Requirement |
 |---|---|---|
 | 1 | Indoor attractions | RAG-only grounded answer with sources |
 | 2 | Currency | MCP tool selection + execution |
 | 3 | 3-day itinerary + weather | Combined RAG + MCP (required) |
 | 4 | Weather forecast | Honest failure handling |
+| 5 | Nature reserves | RAG-only, NParks KB |
+| 6 | Public transport | RAG-only, LTA KB |
+| 7 | Heritage & museums | RAG-only, NHB KB |
