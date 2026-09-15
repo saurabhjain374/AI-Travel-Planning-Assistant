@@ -15,7 +15,7 @@ Everything you need to get the assistant running locally, in one place.
 **Speed:** runs on CPU only — expect answers to take **1–3 minutes** per turn.
 
 > **Custom MCP, built from scratch.** Servers and client use the `mcp` SDK directly — no
-> pre-built MCP packages. They wrap the free Open-Meteo and open.er-api.com REST APIs, and the
+> pre-built MCP packages. They wrap the free Open-Meteo and frankfurter.dev REST APIs, and the
 > client auto-spawns both servers over stdio — nothing to start manually.
 
 ## 🚀 Startup — 3 terminals

@@ -10,7 +10,8 @@ mcp = MCPServer(
 )
 
 
-CURRENCY_API_URL = "https://open.er-api.com/v6/latest"
+# Frankfurter: free, no API key, ECB reference rates refreshed each business day ~16:00 CET.
+CURRENCY_API_URL = "https://api.frankfurter.dev/v1/latest"
 
 
 @mcp.tool()
@@ -35,17 +36,16 @@ async def convert_currency(
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(
-                f"{CURRENCY_API_URL}/{from_currency}"
+                CURRENCY_API_URL,
+                params={
+                    "base": from_currency,
+                    "symbols": to_currency,
+                },
             )
 
             response.raise_for_status()
 
             data = response.json()
-
-        if data.get("result") != "success":
-            return {
-                "error": "Currency service returned an unsuccessful response."
-            }
 
         rates = data.get("rates", {})
 
@@ -63,7 +63,7 @@ async def convert_currency(
             "amount": amount,
             "exchange_rate": rate,
             "converted_amount": round(converted_amount, 2),
-            "last_updated": data.get("time_last_update_utc"),
+            "last_updated": data.get("date"),
         }
 
     except httpx.HTTPError as exc:

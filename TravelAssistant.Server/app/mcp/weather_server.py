@@ -10,8 +10,9 @@ mcp = MCPServer(
 )
 
 
-SINGAPORE_LATITUDE = 1.3521
-SINGAPORE_LONGITUDE = 103.8198
+# Changi (WSSS) - Singapore's official meteorological station, matches Google Weather default.
+SINGAPORE_LATITUDE = 1.3644
+SINGAPORE_LONGITUDE = 103.9915
 WEATHER_API_URL = "https://api.open-meteo.com/v1/forecast"
 
 

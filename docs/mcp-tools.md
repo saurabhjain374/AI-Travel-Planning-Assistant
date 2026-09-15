@@ -6,8 +6,8 @@ Both MCP servers and the client are **custom-built** using the `mcp` Python SDK.
 
 | Tool | Server | External API | Purpose |
 |---|---|---|---|
-| `get_weather` | `app/mcp/weather_server.py` | Open-Meteo | Current + 3-day forecast for Singapore |
-| `convert_currency` | `app/mcp/currency_server.py` | open.er-api.com | Convert an amount between two currencies |
+| `get_weather` | `app/mcp/weather_server.py` | Open-Meteo (Changi station, WSSS) | Current + 3-day forecast for Singapore |
+| `convert_currency` | `app/mcp/currency_server.py` | frankfurter.dev (ECB reference rates) | Convert an amount between two currencies |
 
 ## Wiring
 

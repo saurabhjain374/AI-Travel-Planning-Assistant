@@ -13,8 +13,8 @@ or currency conversion, and get a grounded, easy-to-read answer in a chat UI.
 | You ask about... | It answers using... |
 |---|---|
 | 🏙️ Attractions, itineraries, food, neighbourhoods | A curated **knowledge base** (RAG) — never made-up facts |
-| 🌦️ Today's or the next 3 days' weather | **Live data** from Open-Meteo |
-| 💱 Currency conversion (e.g. INR → SGD) | **Live rates** from open.er-api.com |
+| 🌦️ Today's or the next 3 days' weather | **Live data** from Open-Meteo (Changi station) |
+| 💱 Currency conversion (e.g. INR → SGD) | **Live rates** from frankfurter.dev (ECB reference) |
 | 🗺️ A weather-aware multi-day plan | Both, combined into one grounded answer |
 
 If the answer isn't in the knowledge base or live data, the assistant says so plainly instead of guessing, for example: *"I don't have information about that for Singapore yet, but I'm happy to help with attractions, itineraries, weather, or currency."*

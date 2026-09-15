@@ -6,7 +6,7 @@ A bird's-eye view of how a chat message turns into a grounded answer.
 React UI (5173) ──► FastAPI /api/chat (8000) ──► Orchestrator
                                                     ├─► RAG: FAISS + HuggingFace embeddings
                                                     ├─► MCP client ──► weather_server.py ──► Open-Meteo
-                                                    ├─► MCP client ──► currency_server.py ──► open.er-api.com
+                                                    ├─► MCP client ──► currency_server.py ──► frankfurter.dev
                                                     └─► LLM: Ollama llama3.2:3b
 ```
 
